@@ -1,0 +1,280 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+
+    <title>
+      Point clustering - basic configuration | Sample | ArcGIS API for
+      JavaScript 4.24
+    </title>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba(50,50,50);
+      }
+      #infoDiv {
+        padding: 10px;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.24/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.24/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/layers/FeatureLayer",
+        "esri/views/MapView",
+        "esri/widgets/Legend",
+        "esri/widgets/Expand",
+        "esri/widgets/Home",
+        "esri/widgets/LayerList"
+      ], (Map, FeatureLayer, MapView, Legend, Expand, Home, LayerList) => {
+        // Configures clustering on the layer. A cluster radius
+        // of 100px indicates an area comprising screen space 100px
+        // in length from the center of the cluster
+
+        const clusterConfig = {
+          type: "cluster",
+          clusterRadius: "100px",
+          // {cluster_count} is an aggregate field containing
+          // the number of features comprised by the cluster
+          popupTemplate: {
+            title: "Cluster summary",
+            content: "This cluster represents {cluster_count} members.",
+            fieldInfos: [
+              {
+                fieldName: "cluster_count",
+                format: {
+                  places: 0,
+                  digitSeparator: true
+                }
+              }
+            ]
+          },
+          clusterMinSize: "24px",
+          clusterMaxSize: "60px",
+          labelingInfo: [
+            {
+              deconflictionStrategy: "none",
+              labelExpressionInfo: {
+                expression: "Text($feature.cluster_count, '#,###')"
+              },
+              symbol: {
+                type: "text",
+                color: "#004a5d",
+                font: {
+                  weight: "bold",
+                  family: "Noto Sans",
+                  size: "12px"
+                }
+              },
+              labelPlacement: "center-center"
+            }
+          ]
+        };
+
+        const map = new Map({
+          basemap: "streets-navigation-vector"
+        });
+
+        const view = new MapView({
+          container: "viewDiv",
+          center: [-95.444, 29.756],
+          zoom: 9,
+          map: map
+        });
+        
+        const layer = new FeatureLayer({
+          title: "Active Members",
+          url: "https://services7.arcgis.com/CNA1UqWfbopIY83R/arcgis/rest/services/ActiveMembers_view_layer/FeatureServer/0",
+
+          featureReduction: clusterConfig,
+
+          // popupTemplates can still be viewed on
+          // individual features
+          popupTemplate: {
+            title: "Member",
+            content: "This member address is {Match_addr}",
+          },
+          renderer: {
+            type: "simple",
+            field: "mag",
+            symbol: {
+              type: "simple-marker",
+              size: 4,
+              color: "#69dcff",
+              outline: {
+                color: "rgba(0, 139, 174, 0.5)",
+                width: 5
+              }
+            }
+          }
+        });
+        
+        const downtownLayer = new FeatureLayer({
+          title: "Downtown Drive Times",
+          url:"https://services7.arcgis.com/CNA1UqWfbopIY83R/arcgis/rest/services/DriveTimes_Downtown_view_layer/FeatureServer/0",
+          visible: false,
+          renderer: {
+            type: "unique-value",
+            field: "AREA_DESC",
+            defaultSymbol: {type: "simple-fill"},
+            uniqueValueInfos: [{
+              value: "10 Minutes",
+              symbol: {
+                type: "simple-fill",
+                color: [0,105,26,0.25],
+                style: "solid",
+                outline: {
+                  color: [0,105,26],
+                  width: 2
+                }
+              }
+            },{
+              value: "20 Minutes",
+              symbol: {
+                type: "simple-fill",
+                color: [0,171,43,0.25],
+                style: "solid",
+                outline: {
+                  color: [0,171,43],
+                  width: 2
+                }
+              }
+            },{
+              value: "30 Minutes",
+              symbol: {
+                type: "simple-fill",
+                color: [2,240,62,0.25],
+                style: "solid",
+                outline: {
+                  color: "#02f03e",
+                  width: 2
+                }
+              }
+            }]
+          }
+        });
+        map.add(downtownLayer);
+        
+        const westchaseLayer = new FeatureLayer({
+          title: "Westchase Drive Times",
+          url: "https://services7.arcgis.com/CNA1UqWfbopIY83R/arcgis/rest/services/DriveTimes_Westchase_view_layer/FeatureServer/0",
+          visible: false,
+          renderer: {
+            type: "unique-value",
+            field: "AREA_DESC",
+            defaultSymbol: {type: "simple-fill"},
+            uniqueValueInfos: [{
+              value: "10 Minutes",
+              symbol: {
+                type: "simple-fill",
+                color: [0,105,26,0.25],
+                style: "solid",
+                outline: {
+                  color: [0,105,26],
+                  width: 2
+                }
+              }
+            },{
+              value: "20 Minutes",
+              symbol: {
+                type: "simple-fill",
+                color: [0,171,43,0.25],
+                style: "solid",
+                outline: {
+                  color: [0,171,43],
+                  width: 2
+                }
+              }
+            },{
+              value: "30 Minutes",
+              symbol: {
+                type: "simple-fill",
+                color: [2,240,62,0.25],
+                style: "solid",
+                outline: {
+                  color: "#02f03e",
+                  width: 2
+                }
+              }
+            }]
+          }
+        });
+        map.add(westchaseLayer);
+        map.add(layer);
+
+        view.ui.add(
+          new Home({
+            view: view
+          }),
+          "top-left"
+        );
+        
+        let layerList = new LayerList({
+          view: view
+        });
+        // Adds widget below other elements in the top left corner of the view
+        layerListExpand = new Expand({
+          expandIconClass: "esri-icon-layers",  // see https://developers.arcgis.com/javascript/latest/guide/esri-icon-font/
+          expandTooltip: "Expand to turn on layers", // optional, defaults to "Expand" for English locale
+          view: view,
+          content: layerList
+        });
+        view.ui.add(layerListExpand, "top-left");
+
+        const legend = new Legend({
+          view: view,
+          container: "legendDiv"
+        });
+
+        const infoDiv = document.getElementById("infoDiv");
+        view.ui.add(
+          new Expand({
+            view: view,
+            content: infoDiv,
+            expandIconClass: "esri-icon-layer-list",
+            expandTooltip: "Expand to see legend",
+            expanded: false
+          }),
+          "top-left"
+        );
+
+        const toggleButton = document.getElementById("cluster");
+
+        // To turn off clustering on a layer, set the
+        // featureReduction property to null
+        toggleButton.addEventListener("click", () => {
+          let fr = layer.featureReduction;
+          layer.featureReduction =
+            fr && fr.type === "cluster" ? null : clusterConfig;
+          toggleButton.innerText =
+            toggleButton.innerText === "Enable Clustering"
+              ? "Disable Clustering"
+              : "Enable Clustering";
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+    <div id="infoDiv" class="esri-widget">
+      <button id="cluster" class="esri-button">Disable Clustering</button>
+      <div id="legendDiv"></div>
+    </div>
+  </body>
+</html>
