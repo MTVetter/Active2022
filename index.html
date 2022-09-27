@@ -40,8 +40,9 @@
         "esri/widgets/Legend",
         "esri/widgets/Expand",
         "esri/widgets/Home",
-        "esri/widgets/LayerList"
-      ], (Map, FeatureLayer, MapView, Legend, Expand, Home, LayerList) => {
+        "esri/widgets/LayerList",
+        "esri/layers/support/LabelClass"
+      ], (Map, FeatureLayer, MapView, Legend, Expand, Home, LayerList, LabelClass) => {
         // Configures clustering on the layer. A cluster radius
         // of 100px indicates an area comprising screen space 100px
         // in length from the center of the cluster
@@ -123,6 +124,36 @@
             }
           }
         });
+        
+        const zip = new FeatureLayer({
+          title: "Zip Codes",
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_ZIP_Code_Areas_anaylsis/FeatureServer/0",
+          renderer: {
+            type: "simple",
+            symbol: {
+              type: "simple-fill",
+              color: [190,232,255,0],
+              outline: {
+                color: [0,0,0],
+                width: 0.25
+              }
+            }
+          }
+        });
+        
+        const zipLabelClass = new LabelClass({
+          labelExpressionInfo: { expression:"$feature.ZIP_CODE" },
+          symbol: {
+            type: "text",
+            color: "black",
+            haloSize: 1,
+            haloColor: "white"
+          }
+        });
+        zip.labelingInfo = [zipLabelClass];
+        zip.minScale = 150000;
+        zip.maxScale = 0;
+        map.add(zip)
         
         const downtownLayer = new FeatureLayer({
           title: "Downtown Drive Times",
